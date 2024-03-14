@@ -1,0 +1,26 @@
+version: "3.7"
+services:
+  part2:
+    build:
+      context: .
+    container_name: part2
+    command: sh -c "export PYTHONPATH=$(pwd) && cd ./src && alembic upgrade head && python -m main"
+    env_file:
+      - .env
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+
+  db_postgres:
+    container_name: db_postgres
+    image: postgres:14
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
